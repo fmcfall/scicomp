@@ -1,38 +1,35 @@
-def eulerStep(x0, h, t, f):
-
-    return x0 + h * f(x0,t), t + h
-
-def RK4Step():
-
-    return 
-
-def solveTo(x, t, t2, h, f):
-
-    for i in range(0,int((t2)/h)):
-        x, t = eulerStep(x, h, t, f)
-
-    return x
-
-def solveODE(X, t1, t2, h, f):
-
-    sol = []
-
-    for i in X:
-        x = solveTo(i, t1, t2, h, f)
-        sol.append(x)
-
-    return sol
+import numpy as np
+import matplotlib.pyplot as plt
 
 def main():
 
-    def f(x, t):
+    def func(x,t):
         return x
-
-    x1 = 1; v1 = 1
-    t1 = 0; t2 = 1; h = 0.1
-    x = solveODE([x1, v1], t1, t2, h, f)
     
-    print(x)
+    t = np.linspace(0,1,10)
+
+    print(solve_to(func, 1, t[0], t[-1], 10))
+
+def euler_step(func, x, t, h):
+
+    return x + h * func(x, t)
+
+def solve_to(func, x0, t0, tend, deltat_max):
+
+    h = tend / deltat_max
+    t = t0
+    x = x0
+
+    for i in range(deltat_max):
+        x = euler_step(func, x, t, h)
+        print(x)
+        t += h
+
+    return x
+
+def solve_ode(func, y0, t, method):
+
+    pass
 
 if __name__ == "__main__":
 
