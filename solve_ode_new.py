@@ -3,12 +3,17 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    def func(x,t):
-        return x
+    def func(X,t):
+        
+        x, v = X
+        dxdt = v
+        dvdt = -x
+
+        return np.array([dxdt, dvdt])
     
     t = np.linspace(0,1,10)
 
-    print(solve_to(func, 1, t[0], t[-1], 10))
+    print(solve_ode(func, [1, 1], t))
 
 def euler_step(func, x, t, h):
 
@@ -16,20 +21,28 @@ def euler_step(func, x, t, h):
 
 def solve_to(func, x0, t0, tend, deltat_max):
 
-    h = tend / deltat_max
+    x = x0 # initial x
     t = t0
-    x = x0
+    h = tend / deltat_max
 
     for i in range(deltat_max):
         x = euler_step(func, x, t, h)
-        print(x)
         t += h
 
     return x
 
-def solve_ode(func, y0, t, method):
+def solve_ode(func, x0, t, method="euler"):
 
-    pass
+    solution = np.zeros((len(t),len(x0)))
+    solution[0,:] = x0
+
+    if method == "euler":
+        
+        for i in range(len(t)-1):
+
+            solution[i+1] = euler_step(func, solution[i], t[i], t[i+1]-t[i])
+
+    return solution
 
 if __name__ == "__main__":
 
