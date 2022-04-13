@@ -29,4 +29,9 @@ plt.ylabel('population')
 plt.show()
 
 # T = 25
-# t(0) = 
+# x(0) = 0.6
+# y(0) = 0.3
+# f([x,y],T) = [x(0)-x(T)
+#               y(0)-y(T)
+#               x(0)-0.6 ] = 0
+# Fixed phase condition of x(0) = 0.6
