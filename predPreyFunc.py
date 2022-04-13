@@ -3,7 +3,7 @@ import numpy as np
 from scipy.integrate import odeint, solve_ivp
 import matplotlib.pyplot as plt
 
-def dXdt(X, t):
+def dXdt(t, X):
 
     a = 1
     b = 0.15
@@ -13,11 +13,11 @@ def dXdt(X, t):
                     (b * X[1]) * (1 - (X[1] / X[0]))])
 
 ''' odeint '''
-t = np.linspace(0,200,1000)
-X0 = np.array([0.6, 0.3])
-X, infodict = odeint(dXdt, X0, t, full_output=True)
-print(infodict['message'])
-prey, predator = X.T
+#t = np.linspace(0,200,1000)
+#X0 = np.array([0.6, 0.3])
+#X, infodict = odeint(dXdt, X0, t, full_output=True)
+#print(infodict['message'])
+#prey, predator = X.T
 
 ''' solve_ivp '''
 ''' swap dXdt arguments ^ '''
@@ -27,9 +27,19 @@ prey, predator = X.T
 #prey, predator = X.y
 #t = X.t
 
+''' manual shooting method '''
+t = np.linspace(0, 200, 1000)
+t_span = [t[0], t[-1]]
+X0 = [0.6, 0.4]
+X = solve_ivp(dXdt, t_span, X0, t_eval=t)
+prey, predator = X.y
+t = X.t
+
 f1 = plt.figure()
 plt.plot(t, prey, 'r-', label='Prey')
 plt.plot(t, predator  , 'b-', label='Predator')
+plt.plot([0,200], [0.6,0.685], 'ro') # prey boundary condition
+plt.plot([0,200], [0.3,0.2796], 'bo') # predator boundary condition
 plt.grid()
 plt.legend(loc='best')
 plt.xlabel('time')
