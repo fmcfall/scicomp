@@ -30,7 +30,7 @@ def dXdt(t, X):
 ''' manual shooting method '''
 t = np.linspace(0, 200, 1000)
 t_span = [t[0], t[-1]]
-X0 = [0.6, 0.4]
+X0 = [0.66, 0.3]
 X = solve_ivp(dXdt, t_span, X0, t_eval=t)
 prey, predator = X.y
 t = X.t
@@ -38,8 +38,8 @@ t = X.t
 f1 = plt.figure()
 plt.plot(t, prey, 'r-', label='Prey')
 plt.plot(t, predator  , 'b-', label='Predator')
-plt.plot([0,200], [0.6,0.685], 'ro') # prey boundary condition
-plt.plot([0,200], [0.3,0.2796], 'bo') # predator boundary condition
+plt.plot([0,25], [0.66,0.66], 'ro') # prey boundary condition
+plt.plot([0,25], [0.3,0.3], 'bo') # predator boundary condition
 plt.grid()
 plt.legend(loc='best')
 plt.xlabel('time')
@@ -47,9 +47,9 @@ plt.ylabel('population')
 plt.show()
 
 # T = 25
-# x(0) = 0.6
+# x(0) = 0.66
 # y(0) = 0.3
 # f([x,y],T) = [x(0)-x(T)
 #               y(0)-y(T)
-#               x(0)-0.6 ] = 0
-# Fixed phase condition of x(0) = 0.6
+#               x'(0)    ] = 0
+# Fixed phase condition of x(0) = 0.66
