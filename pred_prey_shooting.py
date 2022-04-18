@@ -16,27 +16,29 @@ predator-prey shooting method
 
 def get_ode_data(ode, u0, args):
 
+    # unpack arguments
     x0 = u0[:-1]
     t = u0[-1]
     t_span = (0, t)
 
+    # solves ode and produces data
     data = solve_ivp(ode, t_span, x0, max_step=1e-2, args=args)
     y_data = data.y
     t_data = data.t
 
-    return np.array([y_data, t_data])
+    return np.asarray([y_data, t_data], dtype=object)
 
 def get_period(y_data, t_data):
     
     # argrelectrema returns array of indices of maxima 
     maxima = argrelmax(y_data)[0]
 
+    # loop finds two maxima that are the same (within 1e-4 of each other)
     c = 0
     while not isclose(y_data[maxima[c]], y_data[maxima[c+1]], rel_tol=1e-4):
         c += 1
 
-    print(y_data[maxima[c]],y_data[maxima[c+1]])
-
+    # calculates period between two maxima
     period = t_data[maxima[c+1]] - t_data[maxima[c]]
     
     return period
