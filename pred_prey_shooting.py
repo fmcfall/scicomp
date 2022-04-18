@@ -1,7 +1,6 @@
-from re import M
 import numpy as np
-from scipy.integrate import odeint, solve_ivp
-import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
 
@@ -18,7 +17,7 @@ def get_ode_data(ode, u0, args):
     '''
     gathers data for ode using solve_ivp
     '''
-    
+
     # unpack arguments
     x0 = u0[:-1]
     t = u0[-1]
@@ -29,7 +28,7 @@ def get_ode_data(ode, u0, args):
     y_data = data.y
     t_data = data.t
 
-    return np.asarray([y_data, t_data], dtype=object)
+    return y_data, t_data
 
 def update_u0(y_data, t_data):
     '''
@@ -48,30 +47,43 @@ def update_u0(y_data, t_data):
 
     # calculates period between two maxima
     period = t_data[i2] - t_data[i1]
-    
-    return np.append(y_data[:,i2], period)
+
+    # update u0 with period and initial y values
+    u0 = list(y_data[:,i2])
+    u0.append(period)
+
+    return u0
+
+def shooting(ode, u0, args):
+
+    y, t = get_ode_data(ode, u0, args)
+    u0 = update_u0(y, t)
+
+    def G(u0, ode, args):
+        '''
+        returns the vector function G
+        '''
+
+        y0 = u0[:-1]
+        t = u0[-1]
+
+        # find F(u0, T)
+        f = solve_ivp(ode, (0, t), y0, max_step=1e-2, args=args).y[:,-1]
+
+        # find u0 - F(u0, T)
+        y_conds = y0 - f
+        t_conds = np.array(ode(t, y0, *args)[0])
+
+        return np.concatenate((y_conds, t_conds), axis=None)
+
+    return fsolve(G, u0, args=(ode, args))
 
 def main():
 
     args = np.array([1, 0.2, 0.1])
-    u0 = np.array([1, 0.5, 200])
-    p = get_ode_data(dXdt, u0, args)
-
-    y = p[0]
-    prey = y[0]
-    predator = y[1]
-    t = p[1]
-
-    print(update_u0(y, t))
-
-    f1 = plt.figure()
-    plt.plot(t, prey, 'r-', label='Prey')
-    plt.plot(t, predator  , 'b-', label='Predator')
-    plt.grid()
-    plt.legend(loc='best')
-    plt.xlabel('time')
-    plt.ylabel('population')
-    plt.show()
+    u0 = [1, 0.5, 200]
+    sol = shooting(dXdt, u0, args=args)
+    print(sol)
 
 if __name__ == '__main__':
     
