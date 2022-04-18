@@ -28,20 +28,23 @@ def get_ode_data(ode, u0, args):
 
     return np.asarray([y_data, t_data], dtype=object)
 
-def get_period(y_data, t_data):
+def update_u0(y_data, t_data):
     
     # argrelectrema returns array of indices of maxima 
     maxima = argrelmax(y_data)[0]
 
     # loop finds two maxima that are the same (within 1e-4 of each other)
     c = 0
-    while not isclose(y_data[maxima[c]], y_data[maxima[c+1]], rel_tol=1e-4):
+    i1 = maxima[c]
+    i2 = maxima[c+1]
+    while not isclose(y_data[i1], y_data[i2], rel_tol=1e-4):
         c += 1
 
     # calculates period between two maxima
-    period = t_data[maxima[c+1]] - t_data[maxima[c]]
+    period = t_data[i2] - t_data[i1]
+    u0 = [y_data[i2], t_data[i2], period]
     
-    return period
+    return u0
 
 def main():
 
