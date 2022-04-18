@@ -1,14 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
-
-def dXdt(t, X, a, b, d):
-
-    return np.array([X[0] * (1 - X[0]) - (a * X[0] * X[1]) / (d + X[0]),
-                    (b * X[1]) * (1 - (X[1] / X[0]))])
 
 ''' 
 shooting method 
@@ -55,7 +49,7 @@ def update_u0(y_data, t_data):
 
     return u0
 
-def shooting_method(ode, u0, args):
+def shooting(ode, u0, args):
     '''
     general shooting method function using fsolve to find the value of G close to zero
     '''
@@ -83,32 +77,5 @@ def shooting_method(ode, u0, args):
         phase_condition = np.array(ode(t, y0, *args)[0])
 
         return np.concatenate((y_conditions, phase_condition), axis=None)
-
-        plt.figure()
     
     return fsolve(G, u0, args=(ode, args))
-
-def main():
-
-    args = np.array([1, 0.2, 0.1])
-    u0 = [1, 0.5, 200]
-    sol = shooting_method(dXdt, u0, args=args)
-    print("Solution: ", sol)
-    print("Period: ", sol[-1])
-
-    y, t = get_ode_data(dXdt, sol, args)
-    prey = y[0]
-    predator = y[1]
-    plt.plot(t, prey, 'r-', label='Prey')
-    plt.plot(t, predator  , 'b-', label='Predator')
-    plt.plot([0,sol[-1]], [sol[0], sol[0]], 'ro') # prey boundary condition
-    plt.plot([0,sol[-1]], [sol[1], sol[1]], 'bo') # predator boundary condition
-    plt.grid()
-    plt.legend(loc='best')
-    plt.xlabel('time')
-    plt.ylabel('population')
-    plt.show()
-
-if __name__ == '__main__':
-    
-    main()
