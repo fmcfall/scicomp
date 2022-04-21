@@ -58,6 +58,7 @@ def shooting(ode, u0, args):
     #print("User guess:", u0)
     u0 = update_u0(y, t)
     #print("Initial guess: ", u0)
+    
 
     def G(u0, ode, args):
         '''
