@@ -1,8 +1,10 @@
+from tokenize import Name
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
+import sys
 
 ''' 
 shooting method 
@@ -53,6 +55,7 @@ def shooting(ode, u0, args):
     '''
     general shooting method function using fsolve to find the value of G close to zero
     '''
+    check_inputs(ode, u0, args)
 
     y, t = get_ode_data(ode, u0, args)
     #print("User guess:", u0)
@@ -80,3 +83,14 @@ def shooting(ode, u0, args):
         return np.concatenate((y_conditions, phase_condition), axis=None)
     
     return fsolve(G, u0, args=(ode, args))
+
+def check_inputs(ode, u0, args):
+
+    try:
+        x0 = u0[:-1]
+        t = u0[-1]
+        t_span = (0, t)
+        solve_ivp(ode, t_span, x0, max_step=1e-2, args=args)
+    except ValueError as v:
+        print(f"Error {type(v)}: Wrong number of arguments or initial values for this ODE")
+        quit()
