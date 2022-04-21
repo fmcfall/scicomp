@@ -1,10 +1,8 @@
-from tokenize import Name
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
-import sys
 
 ''' 
 shooting method 
@@ -37,13 +35,19 @@ def update_u0(y_data, t_data):
 
     # loop finds two maxima that are the same (within 1e-4 of each other)
     c = 0
-    i1, i2 = maxima[c], maxima[c+1]
-    while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=1):
-        c += 1
-        i1, i2 = maxima[c], maxima[c+1]
 
-    # calculates period between two maxima
-    period = t_data[i2] - t_data[i1]
+    if maxima.shape[0] > 1:
+        i1, i2 = maxima[c], maxima[c+1]
+        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=1):
+            c += 1
+            i1, i2 = maxima[c], maxima[c+1]
+
+        # calculates period between two maxima
+        period = t_data[i2] - t_data[i1]
+
+    else:
+        i2 = maxima[c]
+        period = t_data[-1] - t_data[0]
 
     # update u0 with period and initial y values
     u0 = list(y_data[:,i2])
@@ -62,7 +66,6 @@ def shooting(ode, u0, args):
     u0 = update_u0(y, t)
     #print("Initial guess: ", u0)
     
-
     def G(u0, ode, args):
         '''
         the vector function G
@@ -74,7 +77,7 @@ def shooting(ode, u0, args):
         # find F(u0, T)
         f = solve_ivp(ode, (0, t), y0, max_step=1e-2, args=args).y[:,-1]
 
-        # find u0 - F(u0, T)
+        # find u0 - F(u0, T) = 0
         y_conditions = y0 - f
 
         # find phase condition, dx/dt = 0
