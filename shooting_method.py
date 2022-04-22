@@ -38,9 +38,14 @@ def update_u0(y_data, t_data):
 
     if maxima.shape[0] > 1:
         i1, i2 = maxima[c], maxima[c+1]
-        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=1):
+        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=0.1):
             c += 1
+            if c >= maxima.shape[0] - 1:
+                print("solution not found in time span")
+                quit()
+            print(c)
             i1, i2 = maxima[c], maxima[c+1]
+
 
         # calculates period between two maxima
         period = t_data[i2] - t_data[i1]
@@ -86,6 +91,19 @@ def shooting(ode, u0, args):
         return np.concatenate((y_conditions, phase_condition), axis=None)
     
     return fsolve(G, u0, args=(ode, args))
+
+def augmented_shooting(ode, u0, args, approx, secant):
+
+    y, t = get_ode_data(ode, u0, args)
+    u0 = update_u0(y, t)
+
+    def psuedo(u0, ode, args, approx, secant):
+
+        psuedo_arclength = np.dot(u0 - approx, secant)
+
+        return np.concatenate((f, psuedo_arclength), axis=None)
+
+    return fsolve(psuedo, u0, args=(ode, args))
 
 def check_inputs(ode, u0, args):
 
