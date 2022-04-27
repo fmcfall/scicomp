@@ -1,5 +1,12 @@
 import numpy as np
-from shooting_method import shooting
+
+def simple(t, X):
+
+    return np.array((X[0]))
+
+def simple_exact(t, X):
+
+    return np.array((X*np.exp(t)))
 
 def lokta_volterra(t, X, *args):
 
