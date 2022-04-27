@@ -1,59 +1,90 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
+from scipy.optimize import fsolve
 from all_ode import *
-from shooting_method import shooting
+from shooting_method import limit_cycle, shooting
 
-def peturb(param, delta):
+def update_u0(ode, u0, args, limit_cycle):
 
-    return param + delta * param
+    if limit_cycle:
+        return shooting(ode, u0, args)
+    else:
+        return fsolve(lambda u: ode(0, u, *args), np.array([u0]))
 
-def get_secant(ode, u0, u1, args0, args1):
+def natural_continuation(ode, u0, limit_cycle, par0, vary_par, step, max_steps):
 
-    sol_0 = shooting(ode, u0, args=args0)[:-1]
-    sol_1 = shooting(ode, u1, args=args1)[:-1]
+    u0 = update_u0(ode, u0, par0, limit_cycle)
+    par0[vary_par] += step
+    sols = np.array([u0])
+    pars = np.array([par0])
 
-    return sol_1 - sol_0, u0[-1]
+    for i in range(max_steps):
+        par0[vary_par] += step
+        u0 = update_u0(ode, u0, par0, limit_cycle)
+        sols_new = np.array([u0])
+        pars_new = np.array([par0])
+        sols = np.concatenate((sols, sols_new))
+        pars = np.concatenate((pars, pars_new))
 
-def pseudo_arclength(ode, u0, args, t, sol, secant):
+    return sols, pars
 
-    approx = sol + secant
-    f = solve_ivp(ode, (0, t), u0, max_step=1e-2, args=args).y[:,-1]
-    pseudo = np.dot(sol-approx, secant)
-
-    return np.concatenate((f, pseudo), axis=None)
-
-def natural_continuation(ode, u0, par0, vary_par, perturbation):
-
-    par0[vary_par] = par0[vary_par] + perturbation
-
-    return shooting(ode, u0, args=par0), np.array(par0)
-
-def psuedo_continuation():
-    pass
-
-def contiuation(ode, u0, par0, vary_par=0, max_steps=100, method="psuedo", perturbation=0.1):
-
-    n = 0
-    sol = []
-    pars = []
-    if method == "psuedo":
-
-        psuedo_continuation()
-
-    if method == "natural":
-
-        while n < max_steps:
-            sol.append(u0)
-            pars.append(par0)
-            u0, par0 = natural_continuation(ode, u0, par0, vary_par=vary_par, perturbation=perturbation)
-            n += 1
-
-    return np.array(sol), np.array(pars)
+def update_pseudo_args(u0, u1, par0, par1, vary_par):
+ 
+    p0 = par0[vary_par]
+    p1 = par1[vary_par]
+    secant_sol = u1 - u0
+    pred_sol = u1 + secant_sol
+    secant_par = p1 - p0
+    pred_par = p1 + secant_par
     
-u0 = [1.5, 0, 20]
+    return secant_sol, pred_sol, secant_par, pred_par
+
+def pseudo_continuation(ode, u0, limit_cycle, par0, vary_par, step, max_steps):
+
+    def pseudo_arclength(ode, u0, limit_cycle, par0, vary_par, secant_sol, pred_sol, secant_par, pred_par):
+
+        y0 = u0[:-2]
+        t = u0[-2]
+        par = u0[-1]
+        par0[vary_par] = par
+        sol = solve_ivp(ode, (0, t), y0, max_step=1e-2, args=par0).y[:,-1]
+        pseudo = np.dot(secant_sol, u0[:-1] - pred_sol) + np.dot(secant_par, par - pred_par)
+        if limit_cycle:
+            y_condition = y0 - sol
+            phase_condition = np.array(ode(t, y0, *par0)[0])
+            return np.concatenate((y_condition, phase_condition, pseudo), axis=None)
+        else:
+            y_condition = np.array(ode(t, y0, par0)[0])
+            return np.concatenate((y_condition, pseudo), axis=None)
+
+    par0[vary_par] += step
+    u0 = update_u0(ode, u0, par0, limit_cycle)
+    par1 = par0
+    par1[vary_par] += step
+    u1 = update_u0(ode, u0, par1, limit_cycle)
+
+    sols = np.array([u0])
+    pars = np.array([par0])
+
+    sols_new = np.append(u1, par1[vary_par])
+    for i in range(max_steps):
+        secant_sol, pred_sol, secant_par, pred_par = update_pseudo_args(u0, u1, par0, par1, vary_par)
+        sols_new = fsolve(lambda u: pseudo_arclength(ode, u, limit_cycle, par1, vary_par, secant_sol, pred_sol, secant_par, pred_par), sols_new)
+        sols = np.concatenate((sols, np.array([sols_new[:-1]])))
+        par0 = par1
+        par1[vary_par] = sols_new[-1]
+        pars = np.concatenate((pars, np.array([par1])))
+        u0 = u1
+        u1 = sols_new[:-1]
+
+    return sols, pars
+    
+u0 = [1.5, 0, 200]
 par0 = [0, -1]
-sol, pars = contiuation(hopf_bifurcation, u0, par0, 0, 20, method="natural")
+max_steps = 20
+sol, pars = pseudo_continuation(hopf_bifurcation, u0, True, par0, 0, 0.1, max_steps)
+print(sol, pars)
 
 plt.subplot(1, 2, 1)
 plt.plot(pars[:,0], sol[:,0])
