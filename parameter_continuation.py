@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from all_ode import *
-from shooting_method import limit_cycle, shooting
+from shooting_method import shooting
 
 def update_u0(ode, u0, args, limit_cycle):
 
@@ -79,15 +79,27 @@ def pseudo_continuation(ode, u0, limit_cycle, par0, vary_par, step, max_steps):
         u1 = sols_new[:-1]
 
     return sols, pars
-    
-u0 = [1.5, 0, 200]
-par0 = [0, -1]
-max_steps = 20
-sol, pars = pseudo_continuation(hopf_bifurcation, u0, True, par0, 0, 0.1, max_steps)
-print(sol, pars)
 
-plt.subplot(1, 2, 1)
-plt.plot(pars[:,0], sol[:,0])
-plt.subplot(1, 2, 2)
-plt.plot(pars[:,0], sol[:,1])
-plt.show()
+def plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, method):
+
+    sol, pars = method(ode, u0, limit_cycle, par0, vary_par, step, max_steps)
+
+    plt.subplot(1, 2, 1)
+    plt.plot(pars[:,0], sol[:,0])
+    plt.subplot(1, 2, 2)
+    plt.plot(pars[:,0], sol[:,1])
+    plt.show()
+
+def main():
+    ode = hopf_bifurcation
+    u0 = [1.5, 0, 200]
+    limit_cycle = True
+    par0 = [0, -1]
+    vary_par = 0
+    step = 0.1
+    max_steps = 20
+    method = pseudo_continuation
+    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, method)
+
+if __name__=="__main__":
+    main()
