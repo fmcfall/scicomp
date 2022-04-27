@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from all_ode import lokta_volterra, simple, simple_exact
+import time
+from all_ode import simple, simple_exact
 
 def euler_step(t, X, func, args, h):
 
@@ -80,7 +81,15 @@ def plot_errors(tspan, func, x0, args, exact_func, exact_args, deltat_min, delta
     plt.xlabel('Step size')
     plt.legend()
     plt.show()
-    
+
+def get_time(func, x0, args, tspan, deltat_max, method):
+
+    start = time.time()
+    solve_ode(func, x0, args, tspan, deltat_max, method)
+    end = time.time()
+
+    return end - start
+
 def main():
 
     func = simple
@@ -93,6 +102,8 @@ def main():
     methods = [euler_step, rk4_step]
     method = rk4_step
     sol = solve_ode(func, x0, args, tspan, deltat_max, method)
+    time = get_time(func, x0, args, tspan, deltat_max, method)
+    print(time)
     plot_solution(tspan, sol)
     plot_errors(tspan, func, x0, args, exact_func, exact_args, -5, -1, 20, methods)
 
