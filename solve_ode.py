@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from all_ode import lokta_volterra
+from all_ode import lokta_volterra, simple, simple_exact
 
 def euler_step(t, X, func, args, h):
 
@@ -25,11 +25,12 @@ def solve_to(func, x0, args, t0, tend, deltat_max, method):
         if t + deltat_max > tend:
             deltat_max = tend - t
         x, t = method(t, x, func, args, deltat_max)
+        
     return x, t
 
 def solve_ode(func, x0, args, tspan, deltat_max, method):
 
-    solution = np.zeros([len(tspan),len(x0)])
+    solution = np.zeros([tspan.size,x0.size])
     t0 = tspan[0]
 
     for i, tend in enumerate(tspan):
@@ -45,23 +46,32 @@ def plot_solution(tspan, solution):
     for (index, sol) in enumerate(solution.T):
 	    plt.plot(tspan, sol, label='x{}'.format(index+1))
     
-    plt.ylabel('Value')
+    plt.ylabel('x')
     plt.xlabel('time (s)')
     plt.legend()
     plt.show()
 
+def get_error(tspan, solution, exact_func, exact_args):
+
+    exact_solution = exact_func(tspan, exact_args)
+    abs_error = np.absolute(solution - exact_solution)
+    print(abs_error)
+
+    return sum(abs_error)
+
 def main():
 
-    func = lokta_volterra
-    u0 = np.array((0.5, 1, 100))
-    args = np.array((1, 0.2, 0.1))
-    u0 = u0[:-1]
+    func = simple
+    x0 = np.array([1])
+    args = np.array(())
+    exact_func = simple_exact
+    exact_args = np.array((1))
     deltat_max = 0.01
     tspan = np.linspace(0,50,50)
     method = euler_step
-    sol = solve_ode(func, u0, args, tspan, deltat_max, method)
-    print(sol)
-    plot_solution(tspan, sol)
+    sol = solve_ode(func, x0, args, tspan, deltat_max, method)
+    err = get_error(tspan, sol, exact_func, exact_args)
+    print(err)
 
 if __name__ == "__main__":
 
