@@ -1,8 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
+
+from all_ode import lokta_volterra
 
 ''' 
 shooting method 
@@ -14,8 +17,7 @@ def get_ode_data(ode, u0, args):
     '''
 
     # unpack args
-    x0 = u0[:-1]
-    t = u0[-1]
+    x0, t = u0[:-1], u0[-1]
     t_span = (0, t)
 
     # solves ode and produces data
@@ -38,17 +40,13 @@ def update_u0(y_data, t_data):
 
     if maxima.shape[0] > 1:
         i1, i2 = maxima[c], maxima[c+1]
-        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=0.1):
+        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=1e-4):
             c += 1
             if c >= maxima.shape[0] - 1:
-                print("solution not found in time span")
-                quit()
-            print(c)
+                raise RuntimeError('Error: No limit cycle found, try increasing the period')
             i1, i2 = maxima[c], maxima[c+1]
-
         # calculates period between two maxima
         period = t_data[i2] - t_data[i1]
-
     else:
         i2 = maxima[c]
         period = t_data[-1] - t_data[0]
@@ -101,3 +99,46 @@ def check_inputs(ode, u0, args):
     except ValueError as v:
         print(f"Error {type(v)}: Wrong number of arguments or initial values for this ODE")
         quit()
+
+def plot_solutions(ode, u0, args):
+
+    # get sol
+    sol = shooting(ode, u0, args=args)
+    # plot raw data
+    plt.subplot(1, 2, 1)
+    y, t = get_ode_data(ode, u0, args)
+    a = y[0]
+    b = y[1]
+    plt.plot(t, a, 'r-', label='a')
+    plt.plot(t, b  , 'b-', label='b')
+    plt.grid()
+    plt.legend(loc='best')
+    plt.xlabel('t')
+    plt.ylabel('x')
+    # plot sol
+    plt.subplot(1, 2, 2)
+    y, t = get_ode_data(ode, sol, args)
+    a = y[0]
+    b = y[1]
+    plt.plot(t, a, 'r-', label='a')
+    plt.plot(t, b  , 'b-', label='b')
+    plt.plot([0,sol[-1]], [sol[0], sol[0]], 'ro')
+    plt.plot([0,sol[-1]], [sol[1], sol[1]], 'bo')
+    plt.grid()
+    plt.legend(loc='best')
+    plt.xlabel('t')
+    plt.ylabel('x')
+    plt.show()
+
+def main():
+
+    ode = lokta_volterra
+    u0 = np.array((5, 10, 200))
+    args = np.array((1, 0.2, 0.1))
+    sol = shooting(ode, u0, args)
+    plot_solutions(ode, u0, args)
+    
+
+if __name__ == "__main__":
+
+    main()
