@@ -27,7 +27,7 @@ def get_ode_data(ode, u0, args):
 
     return y_data, t_data
 
-def update_u0(y_data, t_data):
+def limit_cycle(y_data, t_data):
     '''
     isolates a limit cycle and returns array for u0 including y values and period
     '''
@@ -65,7 +65,7 @@ def shooting(ode, u0, args):
 
     y, t = get_ode_data(ode, u0, args)
     #print("User guess:", u0)
-    u0 = update_u0(y, t)
+    u0 = limit_cycle(y, t)
     #print("Initial guess: ", u0)
     
     def G(u0, ode, args):
