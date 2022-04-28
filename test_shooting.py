@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from all_ode import hopf_bifurcation
-from shooting_method import shooting, get_ode_data
+from shooting import shooting, get_ode_data
 
 class TestShootingMethod():
     def test_output_length(self):
