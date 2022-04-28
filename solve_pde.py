@@ -1,3 +1,4 @@
+from re import X
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -14,11 +15,40 @@ def component_forward_euler(mx, u_j, lmbda):
 def matrix_forward_euler(mx, u_j, lmbda):
 
     u_jp1 = np.zeros((mx-1, mx-1))
-    rows,cols = np.indices(u_jp1.shape)
+    rows, cols = np.indices(u_jp1.shape)
     u_jp1[rows==cols] = 1 - 2*lmbda
     u_jp1[rows==cols+1] = lmbda
     u_jp1[rows==cols-1] = lmbda
     u_jp1 = np.dot(u_jp1, u_j[1:-1])
+
+    return np.concatenate(([0], u_jp1, [0]))
+
+def TDMA(a,b,c,d):
+
+    n = len(a)
+    a, b, c, d = map(np.array, (a, b, c, d))
+
+    for j in range(1,n):
+        a[j] = a[j] / b[j-1]
+        b[j] = b[j] - a[j] * c[j-1]
+
+        d[j] = d[j] - a[j] * d[j-1]
+    
+    d[n-1] = d[n-1] / b[n-1]
+
+    for j in range(n-1, -1, -1):
+        d[j] = (d[j] - c[j] * d[j+1]) / b[j]
+
+    return d
+
+def matrix_backward_euler(mx, u_j, lmbda):
+
+    u_jp1 = np.zeros((mx-1, mx-1))
+    rows, cols = np.indices(u_jp1.shape)
+    u_jp1[rows==cols] = 1 + 2*lmbda
+    u_jp1[rows==cols+1] = -lmbda
+    u_jp1[rows==cols-1] = -lmbda
+    u_jp1 = np.linalg.solve(u_jp1, u_j[1:-1])
 
     return np.concatenate(([0], u_jp1, [0]))
 
@@ -60,21 +90,21 @@ def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method):
     u_j = solve_pde(pde, x, mx, mt, L, lmbda, method)
     plot_solution(x, u_j, exact_pde, L, T, kappa)
     end = time.time()
-    print(str(method.__name__)+' Time: {}'.format(end-start))
+    print(str(method.__name__)+' time: {}'.format(end-start))
 
 def main():
 
     kappa = 1
     L = 1
     T = 0.5
-    mx = 20
+    mx = 10
     mt = 1000
     x = np.linspace(0, L, mx+1)
     t = np.linspace(0, T, mt+1)
     deltax = x[1] - x[0]
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
-    method = matrix_forward_euler
+    method = matrix_backward_euler
     pde = uI
     exact_pde = uExact
 
