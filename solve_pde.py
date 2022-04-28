@@ -3,20 +3,29 @@ import matplotlib.pyplot as plt
 import time
 from all_pde import *
 
-def component_forward_euler(mx, u_j, u_jp1, lmbda):
+def component_forward_euler(mx, u_j, lmbda):
 
+    u_jp1 = np.zeros(mx+1) 
     for i in range(1, mx):
         u_jp1[i] = u_j[i] + lmbda*(u_j[i-1] - 2*u_j[i] + u_j[i+1])
     
     return u_jp1
 
+def matrix_forward_euler(mx, u_j, lmbda):
 
+    u_jp1 = np.zeros((mx-1, mx-1))
+    rows,cols = np.indices(u_jp1.shape)
+    u_jp1[rows==cols] = 1 - 2*lmbda
+    u_jp1[rows==cols+1] = lmbda
+    u_jp1[rows==cols-1] = lmbda
+    u_jp1 = np.dot(u_jp1, u_j[1:-1])
+
+    return np.concatenate(([0], u_jp1, [0]))
 
 def solve_pde(pde, x, mx, mt, L, lmbda, method):
 
     # Set up the solution variables
     u_j = np.zeros(x.size)        # u at current time step
-    u_jp1 = np.zeros(x.size)      # u at next time step
 
     # Set the initial conditions.
     for i in range(0, mx+1):
@@ -25,7 +34,7 @@ def solve_pde(pde, x, mx, mt, L, lmbda, method):
     # Solve the PDE: loop over all time points.
     for j in range(0, mt):
         # PDE discretised at position x[i], time t[j]
-        u_jp1 = method(mx, u_j, u_jp1, lmbda)
+        u_jp1 = method(mx, u_j, lmbda)
         
         # Boundary conditions
         u_jp1[0] = 0; u_jp1[mx] = 0
@@ -54,6 +63,7 @@ def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method):
     print(str(method.__name__)+' Time: {}'.format(end-start))
 
 def main():
+
     kappa = 1
     L = 1
     T = 0.5
@@ -64,10 +74,10 @@ def main():
     deltax = x[1] - x[0]
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
-    method = component_forward_euler
+    method = matrix_forward_euler
     pde = uI
     exact_pde = uExact
-    
+
     stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method)
 
 if __name__ == '__main__':
