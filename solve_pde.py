@@ -52,6 +52,23 @@ def matrix_backward_euler(mx, u_j, lmbda):
 
     return np.concatenate(([0], u_jp1, [0]))
 
+def crank_nicholson(mx, u_j, lmbda):
+
+    A = np.zeros((mx-1, mx-1))
+    rows, cols = np.indices(A.shape)
+    A[rows==cols] = 1 + lmbda
+    A[rows==cols+1] = -lmbda/2
+    A[rows==cols-1] = -lmbda/2  
+    B = np.zeros((mx-1, mx-1))
+    rows, cols = np.indices(B.shape)
+    B[rows==cols] = 1 - lmbda
+    B[rows==cols+1] = lmbda/2
+    B[rows==cols-1] = lmbda/2
+    u_j = np.dot(u_j[1:-1], B)
+    u_jp1 = np.linalg.solve(A, u_j)
+
+    return  np.concatenate(([0], u_jp1, [0]))
+
 def solve_pde(pde, x, mx, mt, L, lmbda, method):
 
     # Set up the solution variables
@@ -104,7 +121,7 @@ def main():
     deltax = x[1] - x[0]
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
-    method = matrix_backward_euler
+    method = crank_nicholson
     pde = uI
     exact_pde = uExact
 
