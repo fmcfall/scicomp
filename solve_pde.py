@@ -1,13 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 from all_pde import *
 
-def forward_euler(mx, u_j, u_jp1, lmbda):
+def component_forward_euler(mx, u_j, u_jp1, lmbda):
 
     for i in range(1, mx):
         u_jp1[i] = u_j[i] + lmbda*(u_j[i-1] - 2*u_j[i] + u_j[i+1])
     
     return u_jp1
+
+
 
 def solve_pde(pde, x, mx, mt, L, lmbda, method):
 
@@ -42,6 +45,14 @@ def plot_solution(x, u_j, exact_pde, L, T, kappa):
     plt.legend(loc='upper right')
     plt.show()
 
+def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method):
+
+    start = time.time()
+    u_j = solve_pde(pde, x, mx, mt, L, lmbda, method)
+    plot_solution(x, u_j, exact_pde, L, T, kappa)
+    end = time.time()
+    print(str(method.__name__)+' Time: {}'.format(end-start))
+
 def main():
     kappa = 1
     L = 1
@@ -53,10 +64,11 @@ def main():
     deltax = x[1] - x[0]
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
-    method = forward_euler
-    u_j = solve_pde(uI, x, mx, mt, L, lmbda, method)
-    print(u_j)
-    plot_solution(x, u_j, uExact, L, T, kappa)
+    method = component_forward_euler
+    pde = uI
+    exact_pde = uExact
+    
+    stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method)
 
 if __name__ == '__main__':
 
