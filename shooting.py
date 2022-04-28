@@ -4,7 +4,6 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
-
 from all_ode import lokta_volterra
 
 ''' 
@@ -12,9 +11,30 @@ shooting method
 '''
 
 def get_ode_data(ode, u0, args):
-    '''
-    gathers data for ode using solve_ivp
-    '''
+    """
+    Function that finds the solution to the ODE using solve_ivp.
+
+    Parameters
+    ----------
+    ode:    function
+        ODE function. The ODE function should take a time value, 
+        position vector and the parameters (args). It should return
+		ta numpy array.
+
+    u0:     numpy.array(float)
+        Initial position values the ODE starts with.
+
+	args:	np.array(float)
+		Tuple of parameter values used in the ODE.
+
+    Returns
+    -------
+    y_data    np.array(float)
+        Array of the position data.
+
+    t_data    np.array(float)
+        Array of the time data.
+    """
 
     # unpack args
     x0, t = u0[:-1], u0[-1]
@@ -29,7 +49,21 @@ def get_ode_data(ode, u0, args):
 
 def limit_cycle(y_data, t_data):
     '''
-    isolates a limit cycle and returns array for u0 including y values and period
+    Isolates limit cycle and finds the initial conditions for one cycle.
+
+    Parameters
+    ----------
+    y_data    np.array(float)
+        Array of the position data.
+
+    t_data    np.array(float)
+        Array of the time data.
+
+    Returns
+    -------
+    u0    numpy.array(float)
+        Initial values for the isolated limit cycle.
+    """
     '''
     
     # argrelectrema returns array of indices of maxima 
@@ -59,12 +93,52 @@ def limit_cycle(y_data, t_data):
 
 def shooting(ode, u0, args):
     '''
-    general shooting method function using fsolve to find the value of G close to zero
+    Function that solves an ODE using numerical shooting (fsolve).
+    
+    Parameters
+    ----------
+    ode:    function
+        ODE function. The ODE function should take a time value, 
+        position vector and the parameters (args). It should return
+		ta numpy array.
+
+    u0:     numpy.array(float)
+        Initial position values the ODE starts with. This is selected by the user,
+        the function will find the limit cycle conditions automatically.
+
+	args:	np.array(float)
+		Tuple of parameter values used in the ODE.
+
+    Returns
+    -------
+    solution    np.array(float)
+        Array of the initial conditions for the limit cycle, with the last
+        element being the period, T.
     '''    
     def G(u0, ode, args):
-        '''
-        the vector function G
-        '''
+        """
+        Function that sets up the conditions for the numerical shooting,
+        including finding the phase condition.
+    
+        Parameters
+        ----------
+        u0:     numpy.array(float)
+            Initial position values the ODE starts with. This is selected by the user,
+            the function will find the limit cycle conditions automatically.
+
+        ode:    function
+            ODE function. The ODE function should take a time value, 
+            position vector and the parameters (args). It should return
+            ta numpy array.
+
+        args:	np.array(float)
+            Tuple of parameter values used in the ODE.
+
+        Returns
+        -------
+        conditions    np.array(float)
+            Array of the shooting conditions. The final element is the phase condition.
+        """
 
         y0 = u0[:-1]
         t = u0[-1]
@@ -90,7 +164,23 @@ def shooting(ode, u0, args):
     return fsolve(G, u0, args=(ode, args))
 
 def check_inputs(ode, u0, args):
+    """
+    Function that tests the user inputs. If they are incorrect, an error is raised
 
+    Parameters
+    ----------
+    u0:     numpy.array(float)
+        Initial position values the ODE starts with. This is selected by the user,
+        the function will find the limit cycle conditions automatically.
+
+    ode:    function
+        ODE function. The ODE function should take a time value, 
+        position vector and the parameters (args). It should return
+        ta numpy array.
+
+    args:	np.array(float)
+        Tuple of parameter values used in the ODE.
+    """
     try:
         x0 = u0[:-1]
         t = u0[-1]
@@ -101,7 +191,24 @@ def check_inputs(ode, u0, args):
         quit()
 
 def plot_solutions(ode, u0, args):
+    """
+    Function that plots the solutions to the shooting method. The first plot is
+    the whole function and the second as an isolated limit cycle.
 
+    Parameters
+    ----------
+    u0:     numpy.array(float)
+        Initial position values the ODE starts with. This is selected by the user,
+        the function will find the limit cycle conditions automatically.
+
+    ode:    function
+        ODE function. The ODE function should take a time value, 
+        position vector and the parameters (args). It should return
+        ta numpy array.
+
+    args:	np.array(float)
+        Tuple of parameter values used in the ODE.
+    """
     # get sol
     sol = shooting(ode, u0, args=args)
     # plot raw data
@@ -115,6 +222,7 @@ def plot_solutions(ode, u0, args):
     plt.legend(loc='best')
     plt.xlabel('t')
     plt.ylabel('x')
+    plt.title('ODE solution over whole time span')
     # plot sol
     plt.subplot(1, 2, 2)
     y, t = get_ode_data(ode, sol, args)
@@ -128,17 +236,17 @@ def plot_solutions(ode, u0, args):
     plt.legend(loc='best')
     plt.xlabel('t')
     plt.ylabel('x')
+    plt.title('Solution (1 limit cycle)')
     plt.show()
 
 def main():
 
     ode = lokta_volterra
-    u0 = np.array((5, 10, 200))
+    u0 = np.array((2, 3, 200))
     args = np.array((1, 0.2, 0.1))
-    sol = shooting(ode, u0, args)
+    #sol = shooting(ode, u0, args)
     plot_solutions(ode, u0, args)
     
-
 if __name__ == "__main__":
 
     main()
