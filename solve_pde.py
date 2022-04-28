@@ -2,7 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from all_pde import *
 
-def solve_pde(pde, x, mx, mt, L, lmbda):
+def forward_euler(mx, u_j, u_jp1, lmbda):
+
+    for i in range(1, mx):
+        u_jp1[i] = u_j[i] + lmbda*(u_j[i-1] - 2*u_j[i] + u_j[i+1])
+    
+    return u_jp1
+
+def solve_pde(pde, x, mx, mt, L, lmbda, method):
 
     # Set up the solution variables
     u_j = np.zeros(x.size)        # u at current time step
@@ -14,10 +21,8 @@ def solve_pde(pde, x, mx, mt, L, lmbda):
 
     # Solve the PDE: loop over all time points.
     for j in range(0, mt):
-        # Forward Euler timestep at inner mesh points
         # PDE discretised at position x[i], time t[j]
-        for i in range(1, mx):
-            u_jp1[i] = u_j[i] + lmbda*(u_j[i-1] - 2*u_j[i] + u_j[i+1])
+        u_jp1 = method(mx, u_j, u_jp1, lmbda)
         
         # Boundary conditions
         u_jp1[0] = 0; u_jp1[mx] = 0
@@ -48,7 +53,8 @@ def main():
     deltax = x[1] - x[0]
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
-    u_j = solve_pde(uI, x, mx, mt, L, lmbda)
+    method = forward_euler
+    u_j = solve_pde(uI, x, mx, mt, L, lmbda, method)
     print(u_j)
     plot_solution(x, u_j, uExact, L, T, kappa)
 
