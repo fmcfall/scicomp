@@ -424,7 +424,7 @@ def main():
     tspan = np.linspace(0,2,20)
 
     methods = [euler_step, rk4_step, rk5_step]
-    method = method[0]
+    method = methods[0]
 
     sol = solve_ode(func, x0, args, tspan, deltat_max, method)
     for m in methods:
