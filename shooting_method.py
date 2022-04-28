@@ -60,14 +60,7 @@ def limit_cycle(y_data, t_data):
 def shooting(ode, u0, args):
     '''
     general shooting method function using fsolve to find the value of G close to zero
-    '''
-    check_inputs(ode, u0, args)
-
-    y, t = get_ode_data(ode, u0, args)
-    #print("User guess:", u0)
-    u0 = limit_cycle(y, t)
-    #print("Initial guess: ", u0)
-    
+    '''    
     def G(u0, ode, args):
         '''
         the vector function G
@@ -87,6 +80,13 @@ def shooting(ode, u0, args):
 
         return np.concatenate((y_conditions, phase_condition), axis=None)
     
+    check_inputs(ode, u0, args)
+
+    y, t = get_ode_data(ode, u0, args)
+    #print("User guess:", u0)
+    u0 = limit_cycle(y, t)
+    #print("Initial guess: ", u0)
+
     return fsolve(G, u0, args=(ode, args))
 
 def check_inputs(ode, u0, args):
