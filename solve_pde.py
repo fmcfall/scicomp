@@ -105,8 +105,8 @@ def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method):
 
     start = time.time()
     u_j = solve_pde(pde, x, mx, mt, L, lmbda, method)
-    plot_solution(x, u_j, exact_pde, L, T, kappa)
     end = time.time()
+    plot_solution(x, u_j, exact_pde, L, T, kappa)
     print(str(method.__name__)+' time: {}'.format(end-start))
 
 def main():
