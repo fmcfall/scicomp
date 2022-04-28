@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from all_ode import *
-from shooting_method import shooting
+from shooting import shooting
 
 def update_u0(ode, u0, args, limit_cycle):
 
