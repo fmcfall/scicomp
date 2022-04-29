@@ -34,13 +34,10 @@ class HopfBifurcation:
         args = np.array((0.5, -1))
         return u0, args
 
-def modified_hopf_bifurcation(t, X, *args):
-
-    beta = args
-    
-    return np.array([(beta * X[0]) - X[1] + X[0] * (X[0]**2 + X[1]**2) - X[0] * (X[0]**2 + X[1]**2)**2,
-                    X[0] + (beta * X[1]) + X[1] * (X[0]**2 + X[1]**2) - X[1] * (X[0]**2 + X[1]**2)**2])
-
-def cubic(t, u, c):
-    
-    return np.array((u**3 - u + c))
+class Cubic:
+    def func(t, X, c):
+        return np.array((X**3 - X + c))
+    def params():
+        u0 = [1]
+        args = [-2]
+        return u0, args

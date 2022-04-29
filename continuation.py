@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
-from all_ode import *
+from all_ode import Cubic
 from shooting import shooting
 
 def update_u0(ode, u0, args, limit_cycle):
@@ -279,22 +279,21 @@ def plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps,
         Method of continuation to use: natural or pseudo.
     """
     sol, pars = method(ode, u0, limit_cycle, par0, vary_par, step, max_steps)
-    plt.plot(pars[:,0], sol[:,0],'k')
+    plt.plot(pars[:,0], sol[:,0],'r')
     plt.xlabel('Varying Parameter, c')
     plt.ylabel('x')
     plt.show()
 
 def main():
-    ode = hopf_bifurcation
-    u0 = np.array((0.5, 0, 20))
-    limit_cycle = True
-    par0 = np.array([0.5,-1])
+    ode = Cubic.func
+    u0, par0 = Cubic.params()
+    limit_cycle = False
     vary_par = 0
     step = 0.05
-    max_steps = 20
+    max_steps = 350
     methods = [natural_continuation, pseudo_continuation]
     
-    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, methods[0])
+    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, methods[1])
 
 if __name__=="__main__":
     main()
