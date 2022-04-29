@@ -74,7 +74,7 @@ def limit_cycle(y_data, t_data):
 
     if maxima.shape[0] > 1:
         i1, i2 = maxima[c], maxima[c+1]
-        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=1e-4):
+        while not isclose(y_data[0,i1], y_data[0,i2], rel_tol=1e-1):
             c += 1
             if c >= maxima.shape[0] - 1:
                 raise RuntimeError('Error: No limit cycle found, try increasing the period')
@@ -82,8 +82,12 @@ def limit_cycle(y_data, t_data):
         # calculates period between two maxima
         period = t_data[i2] - t_data[i1]
     else:
-        raise RuntimeError('Error: No limit cycle found, try increasing the period')
+        i2 = maxima[c]
+        period = t_data[-1] - t_data[0]
+        if not isclose(y_data[0,0], y_data[0,-1], rel_tol=1e-1):
+            raise RuntimeError('Error: No limit cycle found, try increasing the period')
 
+    print(period)
     # update u0 with period and initial y values
     u0 = list(y_data[:,i2])
     u0.append(period)
