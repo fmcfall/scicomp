@@ -31,8 +31,31 @@ def component_forward_euler(mx, u_j, lmbda):
     
     return u_jp1
 
-def dirichlet(j, mx, lmbda, u_jp1, *args):
+def dirichlet(j, lmbda, u_jp1, *args):
+    """
+    Function that executes a forward euler step to find the next solution values, using
+    a component-wise approach.
 
+    Parameters
+    ----------
+    j:   int
+        Current index.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+	u_jp1: np.array(float)
+	 	Solution values to be altered.
+
+    args:   np.array(function)
+        Functions for the dirichlet boundary condition. If no
+        condition, leave array empty.
+
+    Returns
+    -------
+	u_jp1: np.array(float)
+	 	New solution values.
+    """
     p, q = args
     u_jp1[0] = p(j)
     u_jp1[0] += lmbda * p(j)
@@ -41,13 +64,16 @@ def dirichlet(j, mx, lmbda, u_jp1, *args):
 
     return u_jp1
 
-def matrix_forward_euler(mx, u_j, lmbda):
+def matrix_forward_euler(j, mx, u_j, lmbda, dirichlet_conditions):
     """
     Function that executes a forward euler step to find the next solution values, using
     a matrix approach.
 
     Parameters
     ----------
+    j:   int
+        Current index.
+
     mx:	int
         Number of gridpoints in space.
 
@@ -56,6 +82,10 @@ def matrix_forward_euler(mx, u_j, lmbda):
 
     lmbda:	float
     	Mesh fourier number.
+
+    dirichlet_conditions:   np.array(function)
+        Functions for the dirichlet boundary condition. If no
+        condition, leave array empty.
 
     Returns
     -------
@@ -68,16 +98,21 @@ def matrix_forward_euler(mx, u_j, lmbda):
     u_jp1[rows==cols+1] = lmbda
     u_jp1[rows==cols-1] = lmbda
     u_jp1 = np.dot(u_jp1, u_j[1:-1])
+    if len(dirichlet_conditions) == 2:
+        u_jp1 = dirichlet(j, mx, lmbda, u_jp1, dirichlet_conditions)
 
     return np.concatenate(([0], u_jp1, [0]))
 
-def matrix_backward_euler(mx, u_j, lmbda):
+def matrix_backward_euler(j, mx, u_j, lmbda, dirichlet_conditions):
     """
     Function that executes a backward euler step to find the next solution values, using
     a matrix approach.
 
     Parameters
     ----------
+    j:   int
+        Current index.
+    
     mx:	int
         Number of gridpoints in space.
 
@@ -86,6 +121,10 @@ def matrix_backward_euler(mx, u_j, lmbda):
 
     lmbda:	float
     	Mesh fourier number.
+
+    dirichlet_conditions:   np.array(function)
+        Functions for the dirichlet boundary condition. If no
+        condition, leave array empty.
 
     Returns
     -------
@@ -98,16 +137,21 @@ def matrix_backward_euler(mx, u_j, lmbda):
     u_jp1[rows==cols+1] = -lmbda
     u_jp1[rows==cols-1] = -lmbda
     u_jp1 = np.linalg.solve(u_jp1, u_j[1:-1])
+    if len(dirichlet_conditions) == 2:
+        u_jp1 = dirichlet(j, mx, lmbda, u_jp1, dirichlet_conditions)
 
     return np.concatenate(([0], u_jp1, [0]))
 
-def crank_nicholson(mx, u_j, lmbda):
+def crank_nicholson(j, mx, u_j, lmbda, dirichlet_conditions):
     """
     Function that executes a crank nicholson step to find the next solution values, using
     a matrix approach.
 
     Parameters
     ----------
+    j:   int
+        Current index. 
+  
     mx:	int
         Number of gridpoints in space.
 
@@ -116,6 +160,10 @@ def crank_nicholson(mx, u_j, lmbda):
 
     lmbda:	float
     	Mesh fourier number.
+
+    dirichlet_conditions:   np.array(function)
+        Functions for the dirichlet boundary condition. If no
+        condition, leave array empty.
 
     Returns
     -------
@@ -134,15 +182,17 @@ def crank_nicholson(mx, u_j, lmbda):
     B[rows==cols-1] = lmbda/2
     u_j = np.dot(u_j[1:-1], B)
     u_jp1 = np.linalg.solve(A, u_j)
+    if len(dirichlet_conditions) == 2:
+        u_jp1 = dirichlet(j, mx, lmbda, u_jp1, dirichlet_conditions)
 
     return  np.concatenate(([0], u_jp1, [0]))
 
-def solve_pde(pde, x, mx, mt, L, lmbda, method):
+def solve_pde(pde, x, mx, mt, L, lmbda, method, dirichlet_conditions):
     """
     Function that solves a pde, given a solving method.
 
     Parameters
-    ----------
+    ----------    
     pde:    function
         PDE function, must return a numpy array.
 
@@ -164,6 +214,10 @@ def solve_pde(pde, x, mx, mt, L, lmbda, method):
     method:     function
         PDE solving method.
 
+    dirichlet_conditions:   np.array(function)
+        Functions for the dirichlet boundary condition. If no
+        condition, leave array empty.
+
     Returns
     -------
 	u_j: np.array(float)
@@ -179,7 +233,7 @@ def solve_pde(pde, x, mx, mt, L, lmbda, method):
     # Solve the PDE: loop over all time points.
     for j in range(0, mt):
         # PDE discretised at position x[i], time t[j]
-        u_jp1 = method(mx, u_j, lmbda)
+        u_jp1 = method(j, mx, u_j, lmbda, dirichlet_conditions)
         
         # Boundary conditions
         u_jp1[0] = 0; u_jp1[mx] = 0
@@ -221,7 +275,7 @@ def plot_solution(x, u_j, exact_pde, L, T, kappa):
     plt.legend(loc='upper right')
     plt.show()
 
-def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods):
+def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods, dirichlet_conditions):
     """
     Function that plots the computed solution values against the exact solution for
     each method in a list of methods and computes the time taken for each method.
@@ -251,10 +305,15 @@ def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods):
 
     methods:    list
         List of methods to compare.
+
+    dirichlet_conditions:   np.array(function)
+        Functions for the dirichlet boundary condition. If no
+        condition, leave array empty.
+
     """
     for m in methods:
         start = time.time()
-        u_j = solve_pde(pde, x, mx, mt, L, lmbda, m)
+        u_j = solve_pde(pde, x, mx, mt, L, lmbda, m, dirichlet_conditions)
         end = time.time()
         plot_solution(x, u_j, exact_pde, L, T, kappa)
         print(str(m.__name__)+' time: {}'.format(end-start), ', sol:', u_j)
@@ -274,8 +333,9 @@ def main():
     methods = [matrix_forward_euler, matrix_backward_euler, crank_nicholson]
     pde = uI
     exact_pde = uExact
+    dirichlet_conditions = np.array([])
     #plot_solution(x, sol, exact_pde, L, T, kappa)
-    stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods)
+    stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods, dirichlet_conditions)
 
 if __name__ == '__main__':
 
