@@ -87,7 +87,6 @@ def limit_cycle(y_data, t_data):
         if not isclose(y_data[0,0], y_data[0,-1], rel_tol=1e-1):
             raise RuntimeError('Error: No limit cycle found, try increasing the period')
 
-    print(period)
     # update u0 with period and initial y values
     u0 = list(y_data[:,i2])
     u0.append(period)
@@ -245,8 +244,8 @@ def plot_solutions(ode, u0, args):
 def main():
 
     ode = hopf_bifurcation
-    u0 = np.array((0.6, -0.1, 60))
-    args = np.array((0.1, -1))
+    u0 = np.array((0.5, 0, 20))
+    args = np.array((0.5, -1))
     #sol = shooting(ode, u0, args)
     plot_solutions(ode, u0, args)
     
