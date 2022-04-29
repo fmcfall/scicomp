@@ -280,8 +280,9 @@ def plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps,
     """
     sol, pars = method(ode, u0, limit_cycle, par0, vary_par, step, max_steps)
     plt.plot(pars[:,0], sol[:,0],'r')
-    plt.xlabel('Varying Parameter, c')
+    plt.xlabel('Varying Parameter (c)')
     plt.ylabel('x')
+    plt.grid()
     plt.show()
 
 def main():
@@ -290,10 +291,10 @@ def main():
     limit_cycle = False
     vary_par = 0
     step = 0.05
-    max_steps = 350
+    max_steps = 80
     methods = [natural_continuation, pseudo_continuation]
     
-    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, methods[1])
+    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, methods[0])
 
 if __name__=="__main__":
     main()

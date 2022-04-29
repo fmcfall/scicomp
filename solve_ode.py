@@ -369,6 +369,7 @@ def plot_errors(tspan, func, x0, args, exact_func, exact_args, deltat_min, delta
     plt.ylabel('Error')
     plt.xlabel('Step size')
     plt.legend()
+    plt.grid()
     plt.show()
 
 def get_time(func, x0, args, tspan, deltat_max, method):
