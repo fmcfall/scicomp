@@ -10,7 +10,7 @@ class LoktaVolterra:
         args = np.array((1, 0.2, 0.1))
         return u0, args
 
-class simple:
+class Simple:
     def func(t, X):
         return np.array((X[0]))
     def params():
@@ -24,14 +24,15 @@ class simple:
         args = np.array(())
         return u0, args
 
-
-
-def hopf_bifurcation(t, X, *args):
-
-    beta, sigma = args
-
-    return np.array([(beta * X[0]) - X[1] + (sigma * X[0]) * (X[0]**2 + X[1]**2),
-                    X[0] + (beta * X[1]) + (sigma * X[1]) * (X[0]**2 + X[1]**2)])
+class HopfBifurcation:
+    def func(t, X, *args):
+        beta, sigma = args
+        return np.array([(beta * X[0]) - X[1] + (sigma * X[0]) * (X[0]**2 + X[1]**2),
+                        X[0] + (beta * X[1]) + (sigma * X[1]) * (X[0]**2 + X[1]**2)])
+    def params():
+        u0 = np.array((0.5, 0, 20))
+        args = np.array((0.5, -1))
+        return u0, args
 
 def modified_hopf_bifurcation(t, X, *args):
 

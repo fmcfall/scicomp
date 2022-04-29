@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from all_ode import simple
+from all_ode import Simple
 
 def euler_step(t, X, func, args, h):
     """
@@ -413,11 +413,11 @@ def get_time(func, x0, args, tspan, deltat_max, method):
 
 def main():
 
-    func = simple.func
-    x0, args = simple.params()
+    func = Simple.func
+    x0, args = Simple.params()
 
-    exact_func = simple.exact
-    exact_args = simple.exact_params()
+    exact_func = Simple.exact
+    exact_args = Simple.exact_params()
 
     deltat_max = 0.01
     tspan = np.linspace(0,2,20)
@@ -425,11 +425,10 @@ def main():
     methods = [euler_step, rk4_step, rk5_step]
     method = methods[0]
 
-    sol = solve_ode(func, x0, args, tspan, deltat_max, method)
-    for m in methods:
-        time = get_time(func, x0, args, tspan, deltat_max, m)
-        #print(time)
-        
+    #sol = solve_ode(func, x0, args, tspan, deltat_max, method)
+    #for m in methods:
+    #    time = get_time(func, x0, args, tspan, deltat_max, m)
+    #    print(time)
     #plot_solution(tspan, sol)
     plot_errors(tspan, func, x0, args, exact_func, exact_args, -5, -1, 20, methods)
 

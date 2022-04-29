@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from scipy.optimize import fsolve
 from scipy.signal import argrelmax
 from math import isclose
-from all_ode import hopf_bifurcation, lokta_volterra
+from all_ode import HopfBifurcation, LoktaVolterra
 
 ''' 
 shooting method 
@@ -243,9 +243,8 @@ def plot_solutions(ode, u0, args):
 
 def main():
 
-    ode = hopf_bifurcation
-    u0 = np.array((0.5, 0, 20))
-    args = np.array((0.5, -1))
+    ode = HopfBifurcation.func
+    u0, args = HopfBifurcation.params()
     #sol = shooting(ode, u0, args)
     plot_solutions(ode, u0, args)
     
