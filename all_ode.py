@@ -21,3 +21,14 @@ def hopf_bifurcation(t, X, *args):
 
     return np.array([(beta * X[0]) - X[1] + (sigma * X[0]) * (X[0]**2 + X[1]**2),
                     X[0] + (beta * X[1]) + (sigma * X[1]) * (X[0]**2 + X[1]**2)])
+
+def modified_hopf_bifurcation(t, X, *args):
+
+    beta = args
+    
+    return np.array([(beta * X[0]) - X[1] + X[0] * (X[0]**2 + X[1]**2) - X[0] * (X[0]**2 + X[1]**2)**2,
+                    X[0] + (beta * X[1]) + X[1] * (X[0]**2 + X[1]**2) - X[1] * (X[0]**2 + X[1]**2)**2])
+
+def cubic(t, u, c):
+	
+	return np.array((u**3 - u + c))
