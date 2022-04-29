@@ -53,8 +53,7 @@ class Test():
             lmbda = kappa*deltat/(deltax**2)
             methods = [matrix_forward_euler, matrix_backward_euler, crank_nicholson]
             pde = uI.func
-            exact_pde = uI.exact
             dirichlet_conditions = np.array([])
             for meth in methods:
                 sol = solve_pde(pde, x, mx, mt, L, lmbda, meth, dirichlet_conditions)
-                assert len(sol) == mx
+                assert len(sol) == mx+1
