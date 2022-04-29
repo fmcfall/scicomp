@@ -5,15 +5,63 @@ import time
 from all_pde import *
 
 def component_forward_euler(mx, u_j, lmbda):
+    """
+    Function that executes a forward euler step to find the next solution values, using
+    a component-wise approach.
 
+    Parameters
+    ----------
+    mx:	int
+        Number of gridpoints in space.
+
+	u_j:	np.array(float)
+		Current solution values.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+    Returns
+    -------
+	u_jp1: np.array(float)
+	 	New solution values.
+    """
     u_jp1 = np.zeros(mx+1) 
     for i in range(1, mx):
         u_jp1[i] = u_j[i] + lmbda*(u_j[i-1] - 2*u_j[i] + u_j[i+1])
     
     return u_jp1
 
-def matrix_forward_euler(mx, u_j, lmbda):
+def dirichlet(j, mx, lmbda, u_jp1, *args):
 
+    p, q = args
+    u_jp1[0] = p(j)
+    u_jp1[0] += lmbda * p(j)
+    u_jp1[-1] = q(j)
+    u_jp1[-1] += lmbda * q(j)
+
+    return u_jp1
+
+def matrix_forward_euler(mx, u_j, lmbda):
+    """
+    Function that executes a forward euler step to find the next solution values, using
+    a matrix approach.
+
+    Parameters
+    ----------
+    mx:	int
+        Number of gridpoints in space.
+
+	u_j:	np.array(float)
+		Current solution values.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+    Returns
+    -------
+	u_jp1: np.array(float)
+	 	New solution values.
+    """
     u_jp1 = np.zeros((mx-1, mx-1))
     rows, cols = np.indices(u_jp1.shape)
     u_jp1[rows==cols] = 1 - 2*lmbda
@@ -23,26 +71,27 @@ def matrix_forward_euler(mx, u_j, lmbda):
 
     return np.concatenate(([0], u_jp1, [0]))
 
-def TDMA(a,b,c,d):
-
-    n = len(a)
-    a, b, c, d = map(np.array, (a, b, c, d))
-
-    for j in range(1,n):
-        a[j] = a[j] / b[j-1]
-        b[j] = b[j] - a[j] * c[j-1]
-
-        d[j] = d[j] - a[j] * d[j-1]
-    
-    d[n-1] = d[n-1] / b[n-1]
-
-    for j in range(n-1, -1, -1):
-        d[j] = (d[j] - c[j] * d[j+1]) / b[j]
-
-    return d
-
 def matrix_backward_euler(mx, u_j, lmbda):
+    """
+    Function that executes a backward euler step to find the next solution values, using
+    a matrix approach.
 
+    Parameters
+    ----------
+    mx:	int
+        Number of gridpoints in space.
+
+	u_j:	np.array(float)
+		Current solution values.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+    Returns
+    -------
+	u_jp1: np.array(float)
+	 	New solution values.
+    """
     u_jp1 = np.zeros((mx-1, mx-1))
     rows, cols = np.indices(u_jp1.shape)
     u_jp1[rows==cols] = 1 + 2*lmbda
@@ -53,7 +102,26 @@ def matrix_backward_euler(mx, u_j, lmbda):
     return np.concatenate(([0], u_jp1, [0]))
 
 def crank_nicholson(mx, u_j, lmbda):
+    """
+    Function that executes a crank nicholson step to find the next solution values, using
+    a matrix approach.
 
+    Parameters
+    ----------
+    mx:	int
+        Number of gridpoints in space.
+
+	u_j:	np.array(float)
+		Current solution values.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+    Returns
+    -------
+	u_jp1: np.array(float)
+	 	New solution values.
+    """
     A = np.zeros((mx-1, mx-1))
     rows, cols = np.indices(A.shape)
     A[rows==cols] = 1 + lmbda
@@ -70,7 +138,37 @@ def crank_nicholson(mx, u_j, lmbda):
     return  np.concatenate(([0], u_jp1, [0]))
 
 def solve_pde(pde, x, mx, mt, L, lmbda, method):
+    """
+    Function that solves a pde, given a solving method.
 
+    Parameters
+    ----------
+    pde:    function
+        PDE function, must return a numpy array.
+
+    x:     numpy.array(float)
+        Array of x values to solve for.
+
+    mx:	int
+        Number of gridpoints in space.
+
+    mx:	int
+        Number of gridpoints in time.
+
+    L:  float
+        Upper boundary value of x.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+    method:     function
+        PDE solving method.
+
+    Returns
+    -------
+	u_j: np.array(float)
+	 	Final solution.
+    """
     # Set up the solution variables
     u_j = np.zeros(x.size)        # u at current time step
 
@@ -92,40 +190,92 @@ def solve_pde(pde, x, mx, mt, L, lmbda, method):
     return u_j
 
 def plot_solution(x, u_j, exact_pde, L, T, kappa):
+    """
+    Function that plots the computed solution values against the exact solution.
 
+    Parameters
+    ----------
+    x:     numpy.array(float)
+        Array of x values to solve for.
+
+	u_j:	np.array(float)
+		Current solution values.
+
+    exact_pde:   function
+        Function for the exact solution to the equivalent PDE.
+
+    L:  float
+        Upper boundary value of x.
+
+    T:  float
+        Upeer value of t.
+
+    kappa:  float
+        Heat diffusivity parameter.
+    """
     plt.plot(x, u_j, 'ro', label='num')
     xx = np.linspace(0, L, 250)
     plt.plot(xx, exact_pde(xx, L, T, kappa), 'b-', label='exact')
     plt.xlabel('x')
-    plt.ylabel('u(x,0.5)')
+    plt.ylabel('u_j')
     plt.legend(loc='upper right')
     plt.show()
 
-def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method):
+def stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods):
+    """
+    Function that plots the computed solution values against the exact solution for
+    each method in a list of methods and computes the time taken for each method.
 
-    start = time.time()
-    u_j = solve_pde(pde, x, mx, mt, L, lmbda, method)
-    end = time.time()
-    plot_solution(x, u_j, exact_pde, L, T, kappa)
-    print(str(method.__name__)+' time: {}'.format(end-start))
+    Parameters
+    ----------
+    x:     numpy.array(float)
+        Array of x values to solve for.
+
+	u_j:	np.array(float)
+		Current solution values.
+
+    exact_pde:   function
+        Function for the exact solution to the equivalent PDE.
+
+    L:  float
+        Upper boundary value of x.
+
+    T:  float
+        Upeer value of t.
+
+    kappa:  float
+        Heat diffusivity parameter.
+
+    lmbda:	float
+    	Mesh fourier number.
+
+    methods:    list
+        List of methods to compare.
+    """
+    for m in methods:
+        start = time.time()
+        u_j = solve_pde(pde, x, mx, mt, L, lmbda, m)
+        end = time.time()
+        plot_solution(x, u_j, exact_pde, L, T, kappa)
+        print(str(m.__name__)+' time: {}'.format(end-start), ', sol:', u_j)
 
 def main():
 
     kappa = 1
     L = 1
     T = 0.5
-    mx = 10
+    mx = 35
     mt = 1000
     x = np.linspace(0, L, mx+1)
     t = np.linspace(0, T, mt+1)
     deltax = x[1] - x[0]
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
-    method = crank_nicholson
+    methods = [matrix_forward_euler, matrix_backward_euler, crank_nicholson]
     pde = uI
     exact_pde = uExact
-
-    stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, method)
+    #plot_solution(x, sol, exact_pde, L, T, kappa)
+    stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods)
 
 if __name__ == '__main__':
 
