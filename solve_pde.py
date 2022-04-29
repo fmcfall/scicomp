@@ -2,7 +2,7 @@ from re import X
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from all_pde import *
+from all_pde import uI
 
 def component_forward_euler(mx, u_j, lmbda):
     """
@@ -331,8 +331,8 @@ def main():
     deltat = t[1] - t[0] 
     lmbda = kappa*deltat/(deltax**2)
     methods = [matrix_forward_euler, matrix_backward_euler, crank_nicholson]
-    pde = uI
-    exact_pde = uExact
+    pde = uI.func
+    exact_pde = uI.exact
     dirichlet_conditions = np.array([])
     #plot_solution(x, sol, exact_pde, L, T, kappa)
     stability(pde, exact_pde, x, mx, mt, L, T, kappa, lmbda, methods, dirichlet_conditions)
