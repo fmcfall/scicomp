@@ -285,16 +285,16 @@ def plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps,
     plt.show()
 
 def main():
-    ode = cubic
-    u0 = [1]
-    limit_cycle = False
-    par0 = [-2]
+    ode = hopf_bifurcation
+    u0 = np.array((0.5, 0, 20))
+    limit_cycle = True
+    par0 = np.array([0.5,-1])
     vary_par = 0
     step = 0.05
-    max_steps = 330
+    max_steps = 20
     methods = [natural_continuation, pseudo_continuation]
     
-    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, methods[1])
+    plot_parameter_change(ode, u0, limit_cycle, par0, vary_par, step, max_steps, methods[0])
 
 if __name__=="__main__":
     main()
