@@ -5,7 +5,10 @@ emat30008_SC
 Finn McFall
 
 ## Summary
-General numerical continuation code that can track limit cycle oscillations of arbitrary ODEs under variations of parameters in the system and solve second order diffusive PDEs.
+General numerical continuation code that can track, under variations of a parameter in the system:
+
+- limit cycle oscillations of arbitrary ordinary differential equations (of any number of dimensions)
+- steady-states of second-order diffusive PDEs.
 
 ## Brief Overview of Files
 1. all_ode.py, all_pde.py
